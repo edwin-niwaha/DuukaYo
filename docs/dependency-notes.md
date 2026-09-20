@@ -1,0 +1,5 @@
+# Dependency selection
+
+Django 5.2 LTS was selected using https://www.djangoproject.com/download/ and locked at the installed patch. Next.js 16 is based on https://nextjs.org/blog/next-16 and the registry's current patch. Expo 57 was resolved from npm's stable release and its bundledNativeModules.json; react, react-dom, React Native, worklets and Reanimated are explicitly pinned to its compatibility matrix. Lockfiles are committed. Expo compatibility validation passed.
+
+The mobile UUID override is scoped to xcode, which calls only the retained CommonJS uuid.v4 API. Native validation is still required. The query-string dependency used by Expo Router pulls decode-uri-component 0.2.2, with a moderate malformed-URI denial-of-service advisory. The available fixed 0.5.0 is ESM while query-string 7 expects CommonJS; it was not forcibly substituted. Track the upstream Expo Router/query-string update before public distribution. No user-entered deep-link parsing feature is provided by this MVP, but the transitive advisory remains a release consideration.

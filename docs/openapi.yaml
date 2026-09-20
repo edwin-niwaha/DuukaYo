@@ -1,0 +1,1815 @@
+openapi: 3.0.3
+info:
+  title: Perpetual POS API
+  version: 1.0.0
+paths:
+  /api/v1/auth/google/:
+    post:
+      operationId: auth_google_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoogleInput'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GoogleInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GoogleInput'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/auth/google/session/:
+    post:
+      operationId: auth_google_session_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoogleInput'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GoogleInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GoogleInput'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/auth/me/:
+    get:
+      operationId: auth_me_retrieve
+      tags:
+      - auth
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/auth/refresh/:
+    post:
+      operationId: auth_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/auth/register/:
+    post:
+      operationId: auth_register_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterInput'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterInput'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Business'
+          description: ''
+  /api/v1/auth/revoke/:
+    post:
+      operationId: auth_revoke_create
+      description: |-
+        Takes a token and blacklists it. Must be used with the
+        `rest_framework_simplejwt.token_blacklist` app installed.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenBlacklist'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenBlacklist'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenBlacklist'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenBlacklist'
+          description: ''
+  /api/v1/auth/session/:
+    get:
+      operationId: auth_session_retrieve
+      tags:
+      - auth
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+    post:
+      operationId: auth_session_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginInput'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginInput'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+    delete:
+      operationId: auth_session_destroy
+      tags:
+      - auth
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/auth/token/:
+    post:
+      operationId: auth_token_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/v1/businesses/:
+    post:
+      operationId: businesses_create
+      tags:
+      - businesses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBusinessInput'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreateBusinessInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateBusinessInput'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Business'
+          description: ''
+  /api/v1/businesses/{business_id}/:
+    get:
+      operationId: businesses_retrieve
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - businesses
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Business'
+          description: ''
+    patch:
+      operationId: businesses_partial_update
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - businesses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBusiness'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBusiness'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBusiness'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Business'
+          description: ''
+  /api/v1/businesses/{business_id}/categories/:
+    get:
+      operationId: businesses_categories_list
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - businesses
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+          description: ''
+    post:
+      operationId: businesses_categories_create
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - businesses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Category'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Category'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/v1/businesses/{business_id}/categories/{id}/:
+    get:
+      operationId: businesses_categories_retrieve
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this category.
+        required: true
+      tags:
+      - businesses
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    patch:
+      operationId: businesses_categories_partial_update
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this category.
+        required: true
+      tags:
+      - businesses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/v1/businesses/{business_id}/customers/:
+    get:
+      operationId: businesses_customers_list
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - businesses
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Customer'
+          description: ''
+    post:
+      operationId: businesses_customers_create
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - businesses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Customer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Customer'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Customer'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+  /api/v1/businesses/{business_id}/customers/{id}/:
+    get:
+      operationId: businesses_customers_retrieve
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this customer.
+        required: true
+      tags:
+      - businesses
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+    patch:
+      operationId: businesses_customers_partial_update
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this customer.
+        required: true
+      tags:
+      - businesses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCustomer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCustomer'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCustomer'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+  /api/v1/businesses/{business_id}/customers/{id}/purchases/:
+    get:
+      operationId: businesses_customers_purchases_retrieve
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this customer.
+        required: true
+      tags:
+      - businesses
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+  /api/v1/businesses/{business_id}/devices/:
+    post:
+      operationId: businesses_devices_create
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - businesses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceInput'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/DeviceInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/DeviceInput'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/businesses/{business_id}/orders/:
+    get:
+      operationId: businesses_orders_list
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - businesses
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+          description: ''
+  /api/v1/businesses/{business_id}/orders/{order_id}/:
+    post:
+      operationId: businesses_orders_create
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: order_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - businesses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransitionInput'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TransitionInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TransitionInput'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+          description: ''
+  /api/v1/businesses/{business_id}/products/:
+    get:
+      operationId: businesses_products_list
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - businesses
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+          description: ''
+    post:
+      operationId: businesses_products_create
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - businesses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Product'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Product'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+  /api/v1/businesses/{business_id}/products/{id}/:
+    get:
+      operationId: businesses_products_retrieve
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - businesses
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+    patch:
+      operationId: businesses_products_partial_update
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - businesses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProduct'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProduct'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProduct'
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+  /api/v1/businesses/{business_id}/reports/:
+    get:
+      operationId: businesses_reports_retrieve
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - businesses
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/businesses/{business_id}/sales/:
+    get:
+      operationId: businesses_sales_list
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - businesses
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sale'
+          description: ''
+    post:
+      operationId: businesses_sales_create
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - businesses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaleInput'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SaleInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SaleInput'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sale'
+          description: ''
+  /api/v1/businesses/{business_id}/sales/{sale_id}/:
+    get:
+      operationId: businesses_sales_retrieve
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      - in: path
+        name: sale_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - businesses
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sale'
+          description: ''
+  /api/v1/businesses/{business_id}/staff/:
+    get:
+      operationId: businesses_staff_retrieve
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - businesses
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+    post:
+      operationId: businesses_staff_create
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - businesses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffInput'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffInput'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/businesses/{business_id}/stock/:
+    get:
+      operationId: businesses_stock_retrieve
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - businesses
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+    post:
+      operationId: businesses_stock_create
+      parameters:
+      - in: path
+        name: business_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - businesses
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StockInput'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StockInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StockInput'
+        required: true
+      security:
+      - cookieAuth: []
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/guest-orders/{token}/:
+    get:
+      operationId: guest_orders_retrieve
+      parameters:
+      - in: path
+        name: token
+        schema:
+          type: string
+        required: true
+      tags:
+      - guest-orders
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/v1/shop/{slug}/:
+    get:
+      operationId: shop_retrieve
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - shop
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+    post:
+      operationId: shop_create
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - shop
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderInput'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OrderInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OrderInput'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+components:
+  schemas:
+    Business:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        slug:
+          type: string
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+        logo:
+          type: string
+          format: uri
+          maxLength: 200
+        currency:
+          type: string
+          readOnly: true
+        timezone:
+          type: string
+          maxLength: 60
+        contact:
+          type: string
+          maxLength: 80
+        delivery_enabled:
+          type: boolean
+        delivery_fee:
+          type: integer
+          maximum: 100000000000
+          minimum: 0
+          format: int64
+        safety_buffer:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+      required:
+      - currency
+      - id
+      - name
+      - slug
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 80
+      required:
+      - id
+      - name
+    CreateBusinessInput:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 120
+        slug:
+          type: string
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+      required:
+      - name
+      - slug
+    Customer:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        phone:
+          type: string
+          maxLength: 30
+      required:
+      - id
+      - name
+      - phone
+    DeviceInput:
+      type: object
+      properties:
+        token:
+          type: string
+          maxLength: 512
+        pending_sales:
+          type: integer
+          maximum: 100000
+          minimum: 0
+      required:
+      - pending_sales
+      - token
+    GoogleInput:
+      type: object
+      properties:
+        id_token:
+          type: string
+          writeOnly: true
+          maxLength: 10000
+      required:
+      - id_token
+    KindEnum:
+      enum:
+      - opening
+      - receipt
+      - adjustment
+      type: string
+      description: |-
+        * `opening` - opening
+        * `receipt` - receipt
+        * `adjustment` - adjustment
+    LineInput:
+      type: object
+      properties:
+        product:
+          type: integer
+          minimum: 1
+        quantity:
+          type: integer
+          maximum: 10000
+          minimum: 1
+        price:
+          type: integer
+          maximum: 100000000000
+          minimum: 0
+          format: int64
+        discount:
+          type: integer
+          maximum: 100000000000
+          minimum: 0
+          format: int64
+          default: 0
+        cost:
+          type: integer
+          maximum: 100000000000
+          minimum: 0
+          format: int64
+      required:
+      - product
+      - quantity
+    LoginInput:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - password
+      - username
+    MethodEnum:
+      enum:
+      - cash
+      - manual_mtn
+      - manual_airtel
+      type: string
+      description: |-
+        * `cash` - cash
+        * `manual_mtn` - manual_mtn
+        * `manual_airtel` - manual_airtel
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        phone:
+          type: string
+          maxLength: 30
+        delivery:
+          type: boolean
+        address:
+          type: string
+          maxLength: 250
+        delivery_fee:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        currency:
+          type: string
+          maxLength: 3
+        total:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        lines: {}
+        status:
+          type: string
+          maxLength: 15
+        payment_state:
+          type: string
+          maxLength: 20
+        expires_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        sale:
+          type: integer
+          nullable: true
+      required:
+      - created_at
+      - currency
+      - expires_at
+      - id
+      - lines
+      - name
+      - phone
+      - total
+    OrderInput:
+      type: object
+      properties:
+        client_id:
+          type: string
+          format: uuid
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/LineInput'
+        name:
+          type: string
+          maxLength: 100
+        phone:
+          type: string
+          pattern: ^\+?[0-9 ()-]{7,25}$
+        delivery:
+          type: boolean
+          default: false
+        address:
+          type: string
+          maxLength: 250
+      required:
+      - client_id
+      - lines
+      - name
+      - phone
+    PatchedBusiness:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 120
+        slug:
+          type: string
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+        logo:
+          type: string
+          format: uri
+          maxLength: 200
+        currency:
+          type: string
+          readOnly: true
+        timezone:
+          type: string
+          maxLength: 60
+        contact:
+          type: string
+          maxLength: 80
+        delivery_enabled:
+          type: boolean
+        delivery_fee:
+          type: integer
+          maximum: 100000000000
+          minimum: 0
+          format: int64
+        safety_buffer:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+    PatchedCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 80
+    PatchedCustomer:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        phone:
+          type: string
+          maxLength: 30
+    PatchedProduct:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        category:
+          type: integer
+          nullable: true
+        name:
+          type: string
+          maxLength: 120
+        sku:
+          type: string
+          maxLength: 60
+        barcode:
+          type: string
+          maxLength: 100
+        price:
+          type: integer
+          maximum: 100000000000
+          minimum: 0
+          format: int64
+        cost:
+          type: integer
+          maximum: 100000000000
+          minimum: 0
+          format: int64
+        image:
+          type: string
+          format: uri
+          maxLength: 200
+        published:
+          type: boolean
+        active:
+          type: boolean
+        low_stock_threshold:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        quantity:
+          type: integer
+          readOnly: true
+          default: 0
+        reserved:
+          type: integer
+          readOnly: true
+          default: 0
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+    Payment:
+      type: object
+      properties:
+        method:
+          type: string
+          maxLength: 20
+        amount:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        tendered:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        change:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        provider_verified:
+          type: boolean
+        reference:
+          type: string
+          maxLength: 100
+      required:
+      - amount
+      - method
+      - tendered
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        category:
+          type: integer
+          nullable: true
+        name:
+          type: string
+          maxLength: 120
+        sku:
+          type: string
+          maxLength: 60
+        barcode:
+          type: string
+          maxLength: 100
+        price:
+          type: integer
+          maximum: 100000000000
+          minimum: 0
+          format: int64
+        cost:
+          type: integer
+          maximum: 100000000000
+          minimum: 0
+          format: int64
+        image:
+          type: string
+          format: uri
+          maxLength: 200
+        published:
+          type: boolean
+        active:
+          type: boolean
+        low_stock_threshold:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        quantity:
+          type: integer
+          readOnly: true
+          default: 0
+        reserved:
+          type: integer
+          readOnly: true
+          default: 0
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - cost
+      - id
+      - name
+      - price
+      - quantity
+      - reserved
+      - sku
+      - updated_at
+    RegisterInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        username:
+          type: string
+          pattern: ^[a-zA-Z0-9@.+_-]{3,150}$
+        password:
+          type: string
+          writeOnly: true
+          minLength: 10
+        name:
+          type: string
+          maxLength: 120
+        slug:
+          type: string
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+      required:
+      - name
+      - password
+      - slug
+      - username
+    RoleEnum:
+      enum:
+      - manager
+      - cashier
+      type: string
+      description: |-
+        * `manager` - manager
+        * `cashier` - cashier
+    Sale:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        client_id:
+          type: string
+          format: uuid
+        branch:
+          type: integer
+        customer:
+          type: integer
+          nullable: true
+        total:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        delivery_fee:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        currency:
+          type: string
+          maxLength: 3
+        offline:
+          type: boolean
+        review_reasons: {}
+        occurred_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/SaleLine'
+        payment:
+          $ref: '#/components/schemas/Payment'
+      required:
+      - branch
+      - client_id
+      - created_at
+      - currency
+      - id
+      - lines
+      - occurred_at
+      - payment
+      - total
+    SaleInput:
+      type: object
+      properties:
+        client_id:
+          type: string
+          format: uuid
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/LineInput'
+        branch:
+          type: integer
+        customer:
+          type: integer
+          nullable: true
+        method:
+          $ref: '#/components/schemas/MethodEnum'
+        tendered:
+          type: integer
+          maximum: 1000000000000000
+          minimum: 0
+          format: int64
+        reference:
+          type: string
+          maxLength: 100
+        offline:
+          type: boolean
+          default: false
+        occurred_at:
+          type: string
+          format: date-time
+      required:
+      - client_id
+      - lines
+      - method
+      - tendered
+    SaleLine:
+      type: object
+      properties:
+        product:
+          type: integer
+        name:
+          type: string
+          maxLength: 120
+        quantity:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        price:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        cost:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        discount:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+        currency:
+          type: string
+          maxLength: 3
+      required:
+      - cost
+      - currency
+      - name
+      - price
+      - product
+      - quantity
+    StaffInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        username:
+          type: string
+          pattern: ^[a-zA-Z0-9@.+_-]{3,150}$
+        password:
+          type: string
+          writeOnly: true
+          minLength: 10
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+      required:
+      - password
+      - role
+      - username
+    StatusEnum:
+      enum:
+      - accepted
+      - preparing
+      - ready
+      - completed
+      - cancelled
+      type: string
+      description: |-
+        * `accepted` - accepted
+        * `preparing` - preparing
+        * `ready` - ready
+        * `completed` - completed
+        * `cancelled` - cancelled
+    StockInput:
+      type: object
+      properties:
+        client_id:
+          type: string
+          format: uuid
+        product:
+          type: integer
+          minimum: 1
+        delta:
+          type: integer
+          maximum: 10000000
+          minimum: -10000000
+        kind:
+          $ref: '#/components/schemas/KindEnum'
+        reason:
+          type: string
+          maxLength: 200
+          minLength: 3
+      required:
+      - client_id
+      - delta
+      - kind
+      - product
+      - reason
+    TokenBlacklist:
+      type: object
+      properties:
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - refresh
+    TokenObtainPair:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - password
+      - refresh
+      - username
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TransitionInput:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        method:
+          $ref: '#/components/schemas/MethodEnum'
+        reference:
+          type: string
+          maxLength: 100
+      required:
+      - status
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
