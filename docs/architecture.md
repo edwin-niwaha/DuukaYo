@@ -1,4 +1,4 @@
-# Perpetual POS architecture and pilot scope
+# DuukaYo architecture and pilot scope
 
 One repository, three deployable applications. Django is the sole authority for tenancy, permissions, money, stock, orders and reports. PostgreSQL is the business database; Redis brokers Celery reservation expiry and notifications. Next.js provides a same-origin proxy to Django session authentication (HttpOnly session cookie, CSRF token and origin validation); mobile uses short-lived JWTs and SecureStore. No Firestore or real payment processing.
 

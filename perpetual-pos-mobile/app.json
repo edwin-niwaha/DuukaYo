@@ -1,1 +1,0 @@
-{"expo":{"name":"Perpetual POS","slug":"perpetual-pos-mobile","scheme":"perpetualpos","version":"0.1.0","orientation":"default","userInterfaceStyle":"light","android":{"package":"com.perpetuallabs.pos","permissions":["POST_NOTIFICATIONS"]},"plugins":["expo-router","expo-sqlite","expo-secure-store","expo-notifications"],"experiments":{"typedRoutes":true}}}
