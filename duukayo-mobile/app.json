@@ -2,12 +2,12 @@
   "expo": {
     "name": "DuukaYo",
     "slug": "duukayo-mobile",
-    "scheme": "perpetualpos",
+    "scheme": "duukayo",
     "version": "0.1.0",
     "orientation": "default",
     "userInterfaceStyle": "light",
     "android": {
-      "package": "com.perpetuallabs.pos",
+      "package": "com.duukayo.ug",
       "permissions": [
         "POST_NOTIFICATIONS"
       ]

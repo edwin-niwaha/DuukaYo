@@ -1,0 +1,43 @@
+import { test, expect } from "@playwright/test";
+
+for (const width of [1440, 390, 320]) test(`catalog page numbers and filters at ${width}px`, async ({ page }) => {
+  await page.setViewportSize({ width, height: 900 });
+  const products = Array.from({ length: 125 }, (_, i) => ({ id: i + 1, name: `Product ${i + 1}`, sku: `SKU-${i + 1}`, price: 1000, cost: 500, quantity: 5, reserved: 0, active: true, published: i < 120, category: null, attributes: {}, low_stock_threshold: 2 }));
+  await page.route("**/api/backend/**", route => {
+    const path = new URL(route.request().url()).pathname;
+    if (path.includes("auth/me")) return route.fulfill({ json: { id: 1, username: "Owner", memberships: [{ business: { id: 1, name: "Test Shop", slug: "test", currency: "UGX", timezone: "Africa/Kampala", branches: [{ id: 1, name: "Main" }] }, branch: 1, role: "owner" }] } });
+    if (path.endsWith("products/")) return route.fulfill({ json: products });
+    if (path.endsWith("reports/")) return route.fulfill({ json: { total: 0, transactions: 0, estimated_gross_profit: 0, known_pending_sales: 0, low_stock: [], by_payment_method: {} } });
+    return route.fulfill({ json: [] });
+  });
+  await page.goto("/dashboard");
+  if (width <= 850) await page.getByRole("button", { name: "Open navigation", exact: true }).click();
+  await page.getByRole("navigation", { name: "Business navigation" }).getByRole("button", { name: "Catalog", exact: true }).click();
+  await expect(page.locator(".catalog-row")).toHaveCount(12);
+  const pagination = page.getByRole("navigation", { name: "Product pages, top", exact: true });
+  await expect(pagination.getByRole("button", { name: "Page 1", exact: true })).toHaveAttribute("aria-current", "page");
+  await pagination.getByRole("button", { name: "Page 3", exact: true }).click();
+  await expect(page.locator(".catalog-row").first()).toContainText("Product 25");
+  await pagination.getByRole("button", { name: "Page 11", exact: true }).click();
+  await expect(page.locator(".catalog-row")).toHaveCount(5);
+  await expect(pagination.getByRole("button", { name: "Next products" })).toBeDisabled();
+  await expect(pagination.getByRole("button", { name: "Page 11", exact: true })).toHaveAttribute("aria-current", "page");
+  await page.getByLabel("Per page", { exact: true }).selectOption("24");
+  await expect(page.locator(".catalog-row")).toHaveCount(24);
+  await expect(pagination.getByRole("button", { name: "Page 1", exact: true })).toHaveAttribute("aria-current", "page");
+  await page.getByLabel("Per page", { exact: true }).selectOption("12");
+  await pagination.getByRole("button", { name: "Page 4", exact: true }).click();
+  await pagination.getByRole("button", { name: "Next products" }).click();
+  await expect(page.locator(".catalog-row").first()).toContainText("Product 49");
+  expect(await pagination.getByRole("button").count()).toBeLessThanOrEqual(7);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: '../output/catalog-numbered-' + width + '.png' });
+  await page.getByRole("navigation", { name: "Catalog views" }).getByRole("button", { name: "Drafts", exact: true }).click();
+  await expect(page.locator(".catalog-row")).toHaveCount(5);
+  await expect(page.locator(".catalog-row").first()).toContainText("Product 121");
+  await page.getByLabel("Search products", { exact: true }).fill("does not exist");
+  await expect(page.getByText("No products match these filters.")).toBeVisible();
+  await page.getByRole("button", { name: "Clear filters" }).click();
+  await expect(page.locator(".catalog-row")).toHaveCount(12);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});

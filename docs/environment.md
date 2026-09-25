@@ -34,7 +34,16 @@ certificate; it is not passed as the native SDK's web client ID. iOS uses
 Keep machine-specific `ANDROID_HOME` in mobile `.env.local`. Restart servers and
 Metro after environment edits; native OAuth configuration changes need a rebuild.
 
-Cloudinary, GitHub OAuth, Resend delivery, and MTN/MoMo payment variables remain
+GitHub OAuth, Resend delivery, and MTN/MoMo payment variables remain
 reserved. Setting them does not enable those features. `RESEND_FROM_EMAIL` is
 accepted only as a fallback sender address. No secrets from the borrowed file
 are copied into templates or documentation.
+
+
+## Cloudinary media
+
+The API uses `MEDIA_BACKEND=cloudinary` by default for all uploaded shop logos, product images, galleries and user photos. Set `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET` in the API environment only. Images are validated and re-encoded, then uploaded using signed HTTPS requests. The clients receive the secure delivery URL; no Cloudinary secret is sent to the browser or mobile app. Manage the assets in the Cloudinary console. Public IDs begin with `duukayo/businesses/<id>/` or `duukayo/profiles/<id>/` (profile uploads are grouped under the uploading administrator).
+
+Image URL fields accept only HTTPS Cloudinary delivery URLs from this account when Cloudinary storage is active. Upload failures return a retryable error without silently saving to local disk. `MEDIA_BACKEND=local` is an explicit offline-development option; unit and isolated browser tests select it automatically.
+
+To migrate existing referenced media, run `python manage.py migrate_media_to_cloudinary` for a dry run, then `python manage.py migrate_media_to_cloudinary --apply --backup .media-backups/cloudinary-backup.json` after creating the backup directory. The backup path must be new. Migration preserves original files, uploads deterministic asset IDs, updates matching database references only, and skips images already hosted in the configured account. A failed migration can be rerun with a new backup filename. Serve the original media until migration reports no remaining references.

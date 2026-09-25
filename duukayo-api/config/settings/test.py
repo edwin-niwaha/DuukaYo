@@ -22,3 +22,6 @@ PUSH_BACKEND = "log"
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 CELERY_BROKER_URL = "memory://"
 CELERY_RESULT_BACKEND = "cache+memory://"
+
+# Tests never upload fixtures to the real Cloudinary account.
+MEDIA_BACKEND = "local"

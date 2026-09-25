@@ -4,6 +4,7 @@
 node_modules/
 .next/
 .expo/
+.cxx/
 .venv/
 __pycache__/
 *.pyc
@@ -21,3 +22,12 @@ playwright-report/
 celerybeat-schedule*
 
 .ruff_cache/
+
+duukayo-mobile/dist-check/
+
+duukayo-api/browser-test.sqlite3
+
+duukayo-api/media/
+duukayo-api/platform-browser-media/
+
+duukayo-api/.media-backups/

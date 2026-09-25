@@ -1,9 +1,17 @@
 "use client";
+import { useFeedback } from "../../lib/feedback";
+
+import { productName } from "@/lib/variants";
+import ImageField from "./ImageField";
+import CatalogManager from "./CatalogManager";
+import Icon from "@/components/Icon";
+import MetricCard from "@/components/MetricCard";
 import Link from "next/link";
 import GoogleSignIn from "../auth/GoogleSignIn";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   api,
+  logoutWeb,
   money,
   Profile,
   Membership,
@@ -14,9 +22,13 @@ import {
   Report,
   Business,
 } from "@/lib/api";
+import WorkspaceShell from "./WorkspaceShell";
+import OperationsPanel from "./OperationsPanel";
 import Checkout from "../checkout/Checkout";
 import Receipt from "../checkout/Receipt";
+import PlatformAdmin from "../platform/PlatformAdmin";
 type Tab =
+  | "Operations"
   | "Overview"
   | "Checkout"
   | "Catalog"
@@ -27,7 +39,7 @@ type Tab =
   | "Settings"
   | "Team";
 type Category = { id: number; name: string };
-type Staff = { id: number; user__username: string; role: string };
+type Staff = { id: number; user__username: string; role: string; active: boolean; branch: number };
 type Movement = {
   id: number;
   stock__product__name: string;
@@ -36,14 +48,17 @@ type Movement = {
   created_at: string;
 };
 export default function Dashboard() {
+  const [platformMode, setPlatformMode] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null),
     [selected, setSelected] = useState(0),
     [tab, setTab] = useState<Tab>("Overview"),
-    [error, setError] = useState(""),
-    [notice, setNotice] = useState(""),
+    [error, setError] = useFeedback("error"),
+    [notice, setNotice] = useFeedback("info"),
     [loading, setLoading] = useState(true),
     [busy, setBusy] = useState(false),
     [register, setRegister] = useState(false);
+  const [loadedBase, setLoadedBase] = useState("");
+  const loadGeneration = useRef(0);
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]),
     [customers, setCustomers] = useState<Customer[]>([]),
@@ -71,25 +86,32 @@ export default function Dashboard() {
     void loadProfile();
   }, [loadProfile]);
   const reload = useCallback(async () => {
-    if (!base) return;
-    const [p, c, s, o, v] = await Promise.all([
+    if (!base || (profile?.can_manage_platform && platformMode)) return;
+    const generation = ++loadGeneration.current;
+    const [p, c, s, o, v, cats, summary, team] = await Promise.all([
       api<Product[]>(base + "products/"),
       api<Customer[]>(base + "customers/"),
       api<Sale[]>(base + "sales/"),
       api<Order[]>(base + "orders/"),
       api<Movement[]>(base + "stock/"),
+      api<Category[]>(base + "categories/"),
+      manage ? api<Report>(base + "reports/") : Promise.resolve(null),
+      membership?.role === "owner" ? api<Staff[]>(base + "staff/") : Promise.resolve([]),
     ]);
-    setCategories(await api<Category[]>(base + "categories/"));
+    if (generation !== loadGeneration.current) return;
+    setCategories(cats);
     setProducts(p);
     setCustomers(c);
     setSales(s);
     setOrders(o);
     setMovements(v);
-    if (manage) setReport(await api<Report>(base + "reports/"));
-    if (membership?.role === "owner")
-      setStaff(await api<Staff[]>(base + "staff/"));
-  }, [base, manage, membership?.role]);
+    setReport(summary);
+    setStaff(team);
+    setLoadedBase(base);
+  }, [base, manage, membership?.role, profile?.can_manage_platform, platformMode]);
   useEffect(() => {
+    const generation = loadGeneration;
+    setLoadedBase("");
     setProducts([]);
     setCustomers([]);
     setSales([]);
@@ -97,8 +119,11 @@ export default function Dashboard() {
     setReport(null);
     setReceipt(null);
     setHistory(null);
+    setCategories([]);
+    setStaff([]);
     void reload().catch((e) => setError(e.message));
-  }, [reload]);
+    return () => { generation.current++; };
+  }, [reload, setError]);
   async function run(
     work: () => Promise<unknown>,
     message = "Saved successfully",
@@ -116,6 +141,24 @@ export default function Dashboard() {
       setBusy(false);
     }
   }
+  async function logout() {
+    setBusy(true);
+    setError("");
+    try {
+      await logoutWeb();
+      window.location.replace("/");
+    } catch (e) {
+      setError((e as Error).message);
+      setBusy(false);
+    }
+  }
+  useEffect(() => {
+    const endSession = (event: StorageEvent) => {
+      if (event.key === "duukayo-session-ended") window.location.replace("/");
+    };
+    window.addEventListener("storage", endSession);
+    return () => window.removeEventListener("storage", endSession);
+  }, []);
   async function auth(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.currentTarget));
@@ -177,6 +220,7 @@ export default function Dashboard() {
             disabled={busy}
             onBusyChange={setBusy}
           />
+          <p><Link href="/signup">Create a personal account</Link> to shop or join a team.</p>
           <form onSubmit={auth}>
             <label>
               Username
@@ -214,7 +258,7 @@ export default function Dashboard() {
               </>
             )}
             {error && (
-              <p role="alert" className="error">
+              <p className="error">
                 {error}
               </p>
             )}
@@ -238,11 +282,26 @@ export default function Dashboard() {
         </section>
       </main>
     );
+  if (profile.can_manage_platform && platformMode)
+    return <PlatformAdmin profile={profile} onShopWorkspace={() => setPlatformMode(false)} />;
+  if ((!membership || !business) && profile.is_staff && profile.admin_url)
+    return (
+      <main className="panel">
+        <h1>Platform administration</h1>
+        <p>Signed in as {profile.username}. Manage shops, users and catalog records in Django Admin. You do not need to create a shop workspace.</p>
+        <p><a className="button" href={profile.admin_url}>Open Django Admin</a></p>
+        <p><Link href="/">Browse the marketplace</Link></p>
+        {error && <p className="error">{error}</p>}
+        <button className="link-button" disabled={busy} onClick={() => void logout()}>Sign out</button>
+      </main>
+    );
   if (!membership || !business)
     return (
       <main className="panel">
-        <h1>Set up your workspace</h1>
-        <p>Create your business, or contact its owner to arrange access.</p>
+        <h1>Your account is ready</h1>
+        <p>Signed in as <strong>{profile.username}</strong>. Share this username with your administrator to join a team.</p>
+        <p><Link href="/">Explore shops →</Link></p>
+        <details><summary>Start your own business (optional)</summary>
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -262,21 +321,17 @@ export default function Dashboard() {
             <input name="slug" required pattern="[a-z0-9-]+" maxLength={50} />
           </label>
           {error && (
-            <p role="alert" className="error">
+            <p className="error">
               {error}
             </p>
           )}
           <button disabled={busy}>Create business</button>
         </form>
+        </details>
         <button
           className="link-button"
           disabled={busy}
-          onClick={() =>
-            void run(async () => {
-              await api("auth/session/", undefined, "DELETE");
-              setProfile(null);
-            }, "Signed out")
-          }
+          onClick={() => void logout()}
         >
           Sign out
         </button>
@@ -288,80 +343,21 @@ export default function Dashboard() {
         "Checkout",
         "Catalog",
         "Inventory",
+        "Operations",
         "Orders",
         "Customers",
         "Sales",
         ...(membership.role === "owner" ? (["Settings", "Team"] as Tab[]) : []),
       ]
-    : ["Checkout", "Orders", "Customers", "Sales"];
+    : ["Checkout", "Operations", "Orders", "Customers", "Sales"];
   const active = tabs.includes(tab) ? tab : "Checkout";
   return (
-    <div className="workspace">
-      <aside className="sidebar">
-        <Link className="brand" href="/">
-          ◈ Perpetual<span>POS</span>
-        </Link>
-        <div className="business-picker">
-          <small>YOUR WORKSPACE</small>
-          <select
-            aria-label="Business"
-            value={selected}
-            onChange={(e) => setSelected(Number(e.target.value))}
-          >
-            {profile.memberships.map((m, i) => (
-              <option key={m.business.id} value={i}>
-                {m.business.name}
-              </option>
-            ))}
-          </select>
-          <span className="badge">{membership.role}</span>
-        </div>
-        <nav>
-          {tabs.map((t, i) => (
-            <button
-              key={t}
-              className={active === t ? "active" : ""}
-              onClick={() => {
-                setTab(t);
-                setNotice("");
-                setError("");
-              }}
-            >
-              <span>{["◫", "▦", "◇", "▤", "◷", "♙", "▥", "⚙", "♧"][i]}</span>
-              {t}
-              {t === "Orders" &&
-                orders.filter((o) => o.status === "pending").length > 0 && (
-                  <b>{orders.filter((o) => o.status === "pending").length}</b>
-                )}
-            </button>
-          ))}
-        </nav>
-        <div className="sidebar-bottom">
-          <a href={"/shop/" + business.slug} target="_blank" rel="noreferrer">
-            Visit your storefront ↗
-          </a>
-          <small>Perpetual Labs</small>
-          <button
-            onClick={() =>
-              run(async () => {
-                await api("auth/session/", undefined, "DELETE");
-                setProfile(null);
-              }, "Signed out")
-            }
-          >
-            Sign out
-          </button>
-        </div>
-      </aside>
-      <div className="main-area">
-        <header className="topbar">
-          <span>
-            Main branch <span className="muted">/ {active}</span>
-          </span>
-          <span className="connection">● Connected workspace</span>
-          <span className="avatar">{profile.username[0].toUpperCase()}</span>
-        </header>
-        <main className="content">
+    <WorkspaceShell memberships={profile.memberships} selected={selected} onBusiness={setSelected} active={active} tabs={tabs}
+      onNavigate={value => { setTab(value as Tab); setNotice(""); setError(""); }} pending={orders.filter(o => o.status === "pending").length}
+      username={profile.username} busy={busy} onLogout={() => void logout()}>
+        <main className="content" key={base}>
+          {profile.can_manage_platform && <button className="secondary" onClick={() => setPlatformMode(true)}>Platform administration</button>}
+          {profile.is_staff && profile.admin_url && <p><a href={profile.admin_url}>Open Django Admin</a></p>}
           <div className="page-heading">
             <div>
               <p className="eyebrow">
@@ -373,7 +369,7 @@ export default function Dashboard() {
                 })}
               </p>
               <h1>
-                {active === "Overview" ? "A good day for business." : active}
+                {active === "Overview" ? "Your business, at a glance." : active}
               </h1>
               <p className="muted">
                 {active === "Overview"
@@ -388,16 +384,16 @@ export default function Dashboard() {
               disabled={busy}
               onClick={() => run(reload, "Workspace refreshed")}
             >
-              ↻ Refresh
+              <Icon name="refresh" /> Refresh
             </button>
           </div>
           {error && (
-            <p className="error" role="alert">
+            <p className="error">
               {error}
             </p>
           )}
           {notice && (
-            <p className="success" role="status">
+            <p className="success">
               {notice}
             </p>
           )}
@@ -408,34 +404,36 @@ export default function Dashboard() {
           )}
           {active === "Overview" && report && (
             <>
+              <section className="dashboard-actions" aria-label="Quick actions">
+                <div><p className="eyebrow">READY WHEN YOU ARE</p><h2>Make your next move.</h2></div>
+                <button onClick={() => setTab("Checkout")}><Icon name="plus" /> New sale</button>
+                <button className="secondary" onClick={() => setTab("Orders")}><Icon name="Orders" />Review orders</button>
+                <button className="secondary" onClick={() => setTab("Catalog")}><Icon name="Catalog" />Manage products</button>
+              </section>
               <div className="stats">
                 {[
                   [
                     "Sales today",
                     money(report.total, business.currency),
-                    "Synchronized transactions",
+                    "Synchronized transactions", "wallet",
                   ],
                   [
                     "Transactions",
                     String(report.transactions),
-                    "Completed sales",
+                    "Completed sales", "Orders",
                   ],
                   [
                     "Estimated gross profit",
                     money(report.estimated_gross_profit, business.currency),
-                    "Based on recorded costs",
+                    "Based on recorded costs", "Sales",
                   ],
                   [
                     "Pending orders",
                     String(orders.filter((o) => o.status === "pending").length),
-                    "Waiting for your confirmation",
+                    "Waiting for your confirmation", "Orders",
                   ],
-                ].map(([label, value, note]) => (
-                  <article className="stat" key={label}>
-                    <p>{label}</p>
-                    <strong>{value}</strong>
-                    <small>{note}</small>
-                  </article>
+                ].map(([label, value, note, icon], index) => (
+                  <MetricCard key={label} label={label} value={value} note={note} icon={icon} tone={(["green", "blue", "purple", "amber"] as const)[index]} />
                 ))}
               </div>
               <p className="notice">
@@ -486,7 +484,7 @@ export default function Dashboard() {
                   <h2>Running low</h2>
                   {report.low_stock.map((p, i) => (
                     <div className="data-row" key={i}>
-                      <span>{p.name}</span>
+                      <span>{productName(p)}</span>
                       <span className="badge amber">
                         {p.quantity - p.reserved} left
                       </span>
@@ -508,10 +506,13 @@ export default function Dashboard() {
               </div>
             </>
           )}
+          {active === "Operations" && <OperationsPanel key={`${base}:${membership.branch}`} membership={membership} userId={profile.id} products={products} sales={sales} reload={reload} />}
           {active === "Checkout" && (
             <Checkout
-              key={business.id}
+              key={profile.id + ":" + membership.business.id + ":" + membership.branch}
+              cashierId={profile.id}
               products={products}
+              inventoryReady={loadedBase === base}
               customers={customers}
               membership={membership}
               reload={reload}
@@ -519,6 +520,7 @@ export default function Dashboard() {
           )}
           {active === "Catalog" && (
             <>
+              <CatalogManager key={business.id} products={products} categories={categories} businessId={business.id} currency={business.currency} reload={reload} />
               <section className="panel">
                 <h2>Categories</h2>
                 <form
@@ -543,169 +545,6 @@ export default function Dashboard() {
                   {categories.map((c) => c.name).join(" · ") ||
                     "No categories yet."}
                 </p>
-              </section>
-              <section className="panel">
-                <h2>Add a product</h2>
-                <form
-                  className="form-grid"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    const f = e.currentTarget;
-                    const d = Object.fromEntries(new FormData(f));
-                    void run(async () => {
-                      await api(base + "products/", {
-                        ...d,
-                        category: d.category ? Number(d.category) : null,
-                        price: Number(d.price),
-                        cost: Number(d.cost),
-                        low_stock_threshold: Number(d.low_stock_threshold),
-                        published: d.published === "on",
-                      });
-                      f.reset();
-                    });
-                  }}
-                >
-                  <label>
-                    Name
-                    <input name="name" required />
-                  </label>
-                  <label>
-                    SKU
-                    <input name="sku" required />
-                  </label>
-                  <label>
-                    Barcode
-                    <input name="barcode" />
-                  </label>
-                  <label>
-                    Category
-                    <select name="category">
-                      <option value="">Uncategorized</option>
-                      {categories.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label>
-                    Price ({business.currency})
-                    <input
-                      type="number"
-                      min="0"
-                      step="1"
-                      name="price"
-                      required
-                    />
-                  </label>
-                  <label>
-                    Cost ({business.currency})
-                    <input
-                      type="number"
-                      min="0"
-                      step="1"
-                      name="cost"
-                      required
-                    />
-                  </label>
-                  <label>
-                    Low stock threshold
-                    <input
-                      type="number"
-                      min="0"
-                      name="low_stock_threshold"
-                      defaultValue="5"
-                    />
-                  </label>
-                  <label>
-                    Image URL
-                    <input type="url" name="image" />
-                  </label>
-                  <label className="check">
-                    <input type="checkbox" name="published" />
-                    Publish online
-                  </label>
-                  <button disabled={busy}>Add product</button>
-                </form>
-              </section>
-              <section className="panel">
-                <h2>Your catalog</h2>
-                <div className="table-wrap">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Product / SKU</th>
-                        <th>Price</th>
-                        <th>Available</th>
-                        <th>Online store</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {products.map((p) => (
-                        <tr key={p.id}>
-                          <td>
-                            {p.name}
-                            <small>{p.sku}</small>
-                          </td>
-                          <td>
-                            <input
-                              aria-label={"Price of " + p.name}
-                              type="number"
-                              min="0"
-                              defaultValue={p.price}
-                              onBlur={(e) => {
-                                if (Number(e.target.value) !== p.price)
-                                  void run(() =>
-                                    api(
-                                      base + `products/${p.id}/`,
-                                      { price: Number(e.target.value) },
-                                      "PATCH",
-                                    ),
-                                  );
-                              }}
-                            />
-                          </td>
-                          <td>{p.quantity - p.reserved}</td>
-                          <td>
-                            <button
-                              className="secondary"
-                              disabled={busy}
-                              onClick={() =>
-                                run(() =>
-                                  api(
-                                    base + `products/${p.id}/`,
-                                    { published: !p.published },
-                                    "PATCH",
-                                  ),
-                                )
-                              }
-                            >
-                              {p.published ? "Published" : "Hidden"}
-                            </button>
-                          </td>
-                          <td>
-                            <button
-                              className="link-button"
-                              disabled={busy}
-                              onClick={() =>
-                                run(() =>
-                                  api(
-                                    base + `products/${p.id}/`,
-                                    { active: !p.active },
-                                    "PATCH",
-                                  ),
-                                )
-                              }
-                            >
-                              {p.active ? "Archive" : "Restore"}
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
               </section>
             </>
           )}
@@ -738,7 +577,7 @@ export default function Dashboard() {
                     <select name="product">
                       {products.map((p) => (
                         <option key={p.id} value={p.id}>
-                          {p.name}
+                          {productName(p)}
                         </option>
                       ))}
                     </select>
@@ -984,6 +823,7 @@ export default function Dashboard() {
           {active === "Settings" && (
             <section className="panel">
               <h2>Shop details</h2>
+              <p>{business.published ? "Published storefront" : "Draft — hidden from customers"}</p>
               <form
                 className="form-grid"
                 onSubmit={(e) => {
@@ -994,9 +834,11 @@ export default function Dashboard() {
                       base,
                       {
                         ...d,
+                        published: d.published === "on",
                         delivery_enabled: d.delivery_enabled === "on",
                         delivery_fee: Number(d.delivery_fee),
                         safety_buffer: Number(d.safety_buffer),
+                        storefront_branch: d.storefront_branch ? Number(d.storefront_branch) : null,
                       },
                       "PATCH",
                     );
@@ -1009,7 +851,7 @@ export default function Dashboard() {
                   });
                 }}
               >
-                {(["name", "slug", "contact", "logo", "timezone"] as const).map(
+                {(["name", "slug", "contact", "website", "timezone"] as const).map(
                   (k) => (
                     <label key={k}>
                       {k}
@@ -1039,6 +881,13 @@ export default function Dashboard() {
                   />
                 </label>
                 <label>
+                  Online fulfilment branch
+                  <select name="storefront_branch" defaultValue={business.storefront_branch || ""}>
+                    <option value="">First branch</option>
+                    {business.branches?.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                  </select>
+                </label>
+                <label>
                   Online safety buffer
                   <input
                     type="number"
@@ -1055,66 +904,57 @@ export default function Dashboard() {
                   />
                   Enable shop-managed delivery
                 </label>
+                <label>Description<textarea name="description" maxLength={2000} defaultValue={business.description} /></label>
+                <ImageField businessId={business.id} name="logo" initial={business.logo} />
+                <label className="check"><input type="checkbox" name="published" defaultChecked={business.published} />Publish storefront</label>
                 <button disabled={busy}>Save settings</button>
               </form>
+              <form className="form-grid" onSubmit={e => { e.preventDefault(); const form = e.currentTarget; const name = new FormData(form).get("name"); void run(async () => { await api(base + "branches/", { name }); const updated = await api<Business>(base); setProfile({ ...profile, memberships: profile.memberships.map((m, i) => i === selected ? { ...m, business: updated } : m) }); form.reset(); }); }}><label>New branch<input name="name" required maxLength={100} /></label><button disabled={busy}>Add branch</button></form>
             </section>
           )}
           {active === "Team" && (
             <section className="panel">
-              <h2>Create a staff account</h2>
-              <form
-                className="form-grid"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const f = e.currentTarget,
-                    d = Object.fromEntries(new FormData(f));
-                  void run(async () => {
-                    await api(base + "staff/", d);
-                    f.reset();
-                  });
-                }}
-              >
-                <label>
-                  Username
-                  <input name="username" required />
-                </label>
-                <label>
-                  Email for Google sign-in (optional)
-                  <input name="email" type="email" />
-                </label>
-                <label>
-                  Initial password
-                  <input
-                    name="password"
-                    type="password"
-                    minLength={10}
-                    required
-                  />
-                </label>
-                <label>
-                  Role
-                  <select name="role">
-                    <option value="cashier">Cashier</option>
-                    <option value="manager">Manager</option>
-                  </select>
-                </label>
-                <button disabled={busy}>Create staff</button>
+              <h2>Add an existing account</h2>
+              <p>Give an existing customer or shop owner access to this shop. Their password, shopping account and other shops stay unchanged.</p>
+              <form className="form-grid" onSubmit={e => {
+                e.preventDefault();
+                const form = e.currentTarget;
+                const data = Object.fromEntries(new FormData(form));
+                void run(async () => {
+                  await api(base + "staff/", { ...data, existing_account: true, branch: Number(data.branch) });
+                  form.reset();
+                }, "Shop access added");
+              }}>
+                <label>Existing username<input name="username" required /></label>
+                <label>Shop role<select name="role"><option value="cashier">Cashier</option><option value="manager">Manager</option></select></label>
+                <label>Assigned branch<select name="branch" defaultValue={membership.branch}>{business.branches?.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}</select></label>
+                <button disabled={busy}>Add shop access</button>
               </form>
+              <h2>New team members</h2>
+              <p>New team members should <Link href="/signup">register their own account</Link>, then share their username with you.</p>
               <h3>Your team</h3>
               {staff.map((s) => (
                 <div className="data-row" key={s.id}>
                   <span>{s.user__username}</span>
                   <span className="badge">{s.role}</span>
+                  {s.role !== "owner" && <form className="form-grid" key={`${s.id}:${s.role}:${s.branch}:${s.active}`} onSubmit={e => {
+                    e.preventDefault();
+                    const data = Object.fromEntries(new FormData(e.currentTarget));
+                    void run(() => api(base + `staff/${s.id}/`, { role: data.role, branch: Number(data.branch), active: data.active === "on" }, "PATCH"), "Shop access updated");
+                  }}>
+                    <label>Role for {s.user__username}<select name="role" defaultValue={s.role}><option value="cashier">Cashier</option><option value="manager">Manager</option></select></label>
+                    <label>Branch for {s.user__username}<select name="branch" defaultValue={s.branch}>{business.branches?.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}</select></label>
+                    <label className="check"><input type="checkbox" name="active" defaultChecked={s.active} />Active access for {s.user__username}</label>
+                    <button disabled={busy}>Save access for {s.user__username}</button>
+                  </form>}
                 </div>
               ))}
             </section>
           )}
           <footer>
-            DuukaYo{" "}
-            <span>Built for the everyday. By Perpetual Labs.</span>
+            DuukaYo <span>Built for the everyday. By Perpetual Labs.</span>
           </footer>
         </main>
-      </div>
-    </div>
+    </WorkspaceShell>
   );
 }

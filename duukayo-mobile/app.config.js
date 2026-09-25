@@ -4,6 +4,8 @@ module.exports = {
   // Android is autolinked. iOS additionally needs the OAuth callback URL scheme.
   plugins: [
     ...expo.plugins,
+    ["expo-image-picker", { photosPermission: "Choose photos for your shop and products.", cameraPermission: false, microphonePermission: false }],
+    "./plugins/withWindowsNativePaths",
     ...(process.env.GOOGLE_IOS_URL_SCHEME
       ? [
           [

@@ -11,3 +11,7 @@ dj-database-url>=3,<4
 python-dotenv>=1,<2
 google-auth[requests]>=2.49,<3
 django-cors-headers>=4.9,<5
+
+Pillow>=11.3,<13
+
+requests>=2.34,<3

@@ -10,6 +10,7 @@ export default function Receipt({ sale, shop }: { sale: Sale; shop: string }) {
     `Delivery: ${money(sale.delivery_fee, sale.currency)}`,
     `Total: ${money(sale.total, sale.currency)}`,
     `Payment: ${sale.payment.method}`,
+    ...(sale.allocations || []).map(part => `${part.method}: ${money(part.amount, sale.currency)}${part.reference ? " · " + part.reference : ""}`),
     `Change: ${money(sale.payment.change, sale.currency)}`,
     "Thank you for shopping with us.",
   ].join("\n");

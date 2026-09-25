@@ -51,12 +51,13 @@ test("Google login submits CSRF, onboards a new user, and allows sign-out", asyn
       await route.fulfill({ status: 404, json: {} });
     }
   });
-  await page.goto("/");
+  await page.goto("/dashboard");
   await page.getByRole("button", { name: "Continue with Google" }).click();
   await expect(
-    page.getByRole("heading", { name: "Set up your workspace" }),
+    page.getByRole("heading", { name: "Your account is ready" }),
   ).toBeVisible();
   expect(submissions).toBe(1);
+  await page.getByText("Start your own business (optional)", { exact: true }).click();
   await page.getByLabel("Business name").fill("Test Shop");
   await page.getByLabel("Shop URL name").fill("test-shop");
   await page
@@ -65,8 +66,9 @@ test("Google login submits CSRF, onboards a new user, and allows sign-out", asyn
   await expect.poll(() => businessCreated).toBe(true);
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "Welcome back." }),
+    page.getByRole("heading", { name: /Discover.*more/ }),
   ).toBeVisible();
+  await page.goto("/dashboard");
   await expect(
     page.getByRole("button", { name: "Continue with Google" }),
   ).toBeVisible();
@@ -90,7 +92,7 @@ test("Google rejection shows a recoverable error", async ({ page }) => {
         : { detail: "Invalid or expired Google sign-in token." },
     }),
   );
-  await page.goto("/");
+  await page.goto("/dashboard");
   await page.getByRole("button", { name: "Continue with Google" }).click();
   await expect(
     page.getByRole("alert").filter({ hasText: "Invalid or expired" }),

@@ -1,10 +1,18 @@
 export type Product = {
+  description?: string;
+  gallery?: string[];
+  showcase?: boolean;
+  variant_group?: string;
+  attributes?: Record<string, string>;
+  image?: string;
+  category?: number | null;
+  category_name?: string;
   id: number;
   name: string;
   sku: string;
   barcode: string;
   price: number;
-  cost: number;
+  cost: number | null;
   quantity: number;
   reserved: number;
   active: boolean;
@@ -21,6 +29,10 @@ export type Membership = { business: Business; branch: number; role: string };
 export type Profile = {
   id: number;
   username: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  has_password?: boolean;
   memberships: Membership[];
 };
 export type Session = {

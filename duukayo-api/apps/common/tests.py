@@ -31,8 +31,8 @@ class Fixture:
         self.other = get_user_model().objects.create_user(
             "other", password="strong-password-123"
         )
-        self.business = Business.objects.create(name="One", slug="one", safety_buffer=0)
-        self.b2 = Business.objects.create(name="Two", slug="two")
+        self.business = Business.objects.create(published=True, name="One", slug="one", safety_buffer=0)
+        self.b2 = Business.objects.create(published=True, name="Two", slug="two")
         self.branch = Branch.objects.create(business=self.business)
         self.branch2 = Branch.objects.create(business=self.b2)
         self.m = Membership.objects.create(
@@ -152,7 +152,7 @@ class IntegrityTests(Fixture, TestCase):
             checkout(self.m, data)
 
     def test_manual_money_never_verified(self):
-        sale = checkout(self.m, self.sale_data(method="manual_mtn", tendered=5000))
+        sale = checkout(self.m, self.sale_data(method="manual_mtn", tendered=5000, reference="MTN-TEST-1"))
         self.assertFalse(sale.payment.provider_verified)
 
     def test_reservation_cancel_releases(self):
@@ -260,7 +260,8 @@ class IntegrityTests(Fixture, TestCase):
 
     def test_guest_cannot_enumerate_orders_or_private_products(self):
         self.client.force_authenticate(None)
-        self.assertEqual(self.client.get(self.base + "orders/").status_code, 403)
+        # JWT authentication returns a challenge so mobile clients can refresh.
+        self.assertEqual(self.client.get(self.base + "orders/").status_code, 401)
         self.assertEqual(self.client.get("/api/v1/guest-orders/1/").status_code, 404)
         self.assertEqual(self.client.get("/api/v1/shop/two/").json()["products"], [])
         order = place_order(self.business, self.order_data())
@@ -312,7 +313,7 @@ class ConcurrencyTests(Fixture, TransactionTestCase):
     def test_two_reservations_cannot_oversell(self):
         from concurrent.futures import ThreadPoolExecutor
 
-        from django.db import close_old_connections
+        from django.db import close_old_connections, connections
 
         self.stock.quantity = 3
         self.stock.save()
@@ -327,7 +328,7 @@ class ConcurrencyTests(Fixture, TransactionTestCase):
             except ValidationError:
                 return False
             finally:
-                close_old_connections()
+                connections.close_all()
 
         with ThreadPoolExecutor(max_workers=2) as pool:
             outcomes = list(pool.map(attempt, range(2)))
@@ -397,7 +398,7 @@ class AdditionalIntegrityTests(Fixture, TestCase):
         self.assertEqual(order.payment_state, "unpaid")
         for state in ["accepted", "preparing", "ready", "completed"]:
             transition_order(
-                self.m, order.pk, {"status": state, "method": "manual_airtel"}
+                self.m, order.pk, {"status": state, "method": "manual_airtel", "reference": "AIRTEL-TEST-1"}
             )
         order.refresh_from_db()
         self.assertEqual(order.sale.delivery_fee, 3000)
@@ -429,7 +430,7 @@ class ConcurrentSalesTests(Fixture, TransactionTestCase):
     def test_concurrent_sale_retries_create_one_payment(self):
         from concurrent.futures import ThreadPoolExecutor
 
-        from django.db import close_old_connections
+        from django.db import close_old_connections, connections
 
         data = self.sale_data()
 
@@ -443,7 +444,7 @@ class ConcurrentSalesTests(Fixture, TransactionTestCase):
                     data,
                 ).pk
             finally:
-                close_old_connections()
+                connections.close_all()
 
         with ThreadPoolExecutor(max_workers=2) as pool:
             ids = list(pool.map(attempt, range(2)))

@@ -5,9 +5,11 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
-from apps.notifications.firebase import get_firebase_app
 from django.core.exceptions import ImproperlyConfigured
 from django.test import SimpleTestCase, override_settings
+from rest_framework.test import APIClient
+
+from apps.notifications.firebase import get_firebase_app
 from environment import (
     configure_settings,
     database_config,
@@ -17,7 +19,6 @@ from environment import (
     google_client_ids,
     load_environment,
 )
-from rest_framework.test import APIClient
 
 
 class EnvironmentTests(SimpleTestCase):

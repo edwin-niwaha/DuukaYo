@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="560" viewBox="0 0 640 560" fill="none">
+<circle cx="334" cy="272" r="231" fill="#DDE9B7"/><circle cx="334" cy="272" r="193" stroke="#8DA875" stroke-opacity=".3"/>
+<ellipse cx="329" cy="481" rx="199" ry="24" fill="#173F2B" opacity=".12"/>
+<g transform="rotate(-17 240 240)"><rect x="178" y="92" width="72" height="218" rx="35" fill="#D9AC64"/><path d="m187 131 50 14m-52 27 50 14m-52 27 50 14m-52 27 50 14" stroke="#FADE9C" stroke-width="12" stroke-linecap="round"/></g>
+<path d="M328 160c-51-91 52-139 35-37 26-80 116-43 44 15 110-37 111 59 23 53" fill="#36774A"/><path d="M361 115c13 57 1 97-16 129" stroke="#B1CD79" stroke-width="7"/>
+<g transform="rotate(12 440 240)"><rect x="405" y="167" width="80" height="179" rx="16" fill="#F8FAEF"/><path d="M405 190h80v78h-80z" fill="#71A893"/><path d="M424 143h42v31h-42z" fill="#F8FAEF"/><rect x="421" y="140" width="48" height="14" rx="4" fill="#2A6C51"/><text x="445" y="238" text-anchor="middle" font-family="Arial" font-size="17" fill="white" font-weight="bold">MILK</text></g>
+<circle cx="284" cy="259" r="54" fill="#E88145"/><path d="M282 213c-8-33 34-40 40-20-17 17-30 13-40 20" fill="#42744A"/>
+<path d="m169 265 316 0-32 200c-2 17-16 25-33 25H231c-19 0-33-12-35-31z" fill="#C49252"/><path d="m185 284 277 0-27 176H212z" fill="#DBB47A"/><path d="M261 298v-56c0-91 128-91 128 0v56" stroke="#936639" stroke-width="14" stroke-linecap="round"/>
+<circle cx="326" cy="382" r="51" fill="#174F38"/><path d="m299 383 18 18 35-40" stroke="#E6EDBA" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="147" cy="398" r="41" fill="#DDA638"/><path d="M142 361c-17-28 14-39 26-19" fill="#39774A"/><circle cx="486" cy="422" r="46" fill="#BC583C"/><path d="m480 373 7 22 20-13-14 23 22 9-26-1-15 19 5-26-18-13 22 5" fill="#497549"/>
+<path d="m108 171 7 19 19 7-19 7-7 19-7-19-19-7 19-7zM527 277l5 14 14 5-14 5-5 14-5-14-14-5 14-5z" fill="#F9F8E7"/>
+</svg>

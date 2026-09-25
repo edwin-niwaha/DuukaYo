@@ -1,8 +1,10 @@
+import CartSync from "@/components/CartSync";
+import Toasts from "@/components/Toasts";
 import type { Metadata } from "next";
 import "./globals.css";
 export const metadata: Metadata = {
-  title: "DuukaYo · Your shop, in sync",
-  description: "A calmer way to run your shop. By Perpetual Labs.",
+  title: "DuukaYo · Discover more",
+  description: "Discover shops, explore everyday essentials and new favourites, and order for pickup or shop delivery.",
 };
 export default function RootLayout({
   children,
@@ -11,7 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>{children}<CartSync /><Toasts /></body>
     </html>
   );
 }

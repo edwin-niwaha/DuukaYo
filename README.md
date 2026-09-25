@@ -31,6 +31,14 @@ See [environment configuration](docs/environment.md) for the borrowed variable f
 
 ## Run the API
 
+After dependency changes, update the same virtual environment used by the API. From the repository root:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r .\duukayo-api\requirements.lock.txt
+```
+
+Image uploads require Pillow, which provides the `PIL` module. Installing it into another Python environment does not fix the API environment. Restart a running development server after installing new dependencies.
+
 With the virtual environment activated:
 
 ```powershell
@@ -42,6 +50,10 @@ python manage.py runserver 0.0.0.0:8000
 
 API docs: [localhost:8000/api/v1/docs/](http://localhost:8000/api/v1/docs/).
 
+Django admin: [localhost:8000/admin/](http://localhost:8000/admin/). Sign in with a Django staff/superuser account; shop-owner membership alone does not grant platform administration. The panel supports users, groups, businesses, branches, memberships, categories, products and customers. Run `python manage.py migrate` when enabling it on another environment, and `python manage.py createsuperuser` if that environment has no administrator. Production must also serve `STATIC_ROOT` at `/static/` after `python manage.py collectstatic --noinput`.
+
+Platform administrators sign in to the web dashboard to manage shops, accounts, catalogs, operations, settings and reports directly. See [web platform administration](docs/platform-admin.md) for permissions, activation and tested workflows. Django Admin remains a maintenance tool; set `PUBLIC_ADMIN_URL` to its browser-accessible URL when Django runs behind a proxy or internal hostname.
+
 ## Run the web app
 
 Open another terminal from the repository root:
@@ -52,7 +64,7 @@ npm ci
 npm run dev
 ```
 
-Open [localhost:3000](http://localhost:3000). Use this origin to match the cookie and CSRF settings.
+Open [localhost:3000](http://localhost:3000) to browse shops and place customer orders. Staff sign in at [localhost:3000/dashboard](http://localhost:3000/dashboard). Use this origin to match the cookie and CSRF settings.
 
 - Owner: `kampala-corner-owner`
 - Cashier: `kampala-corner-cashier`
@@ -68,6 +80,8 @@ cd duukayo-mobile
 npm ci
 npm run mobile
 ```
+
+The mobile home screen is the customer storefront. Tap **Business tools** for staff sign-in and POS. See [customer storefront](docs/storefront.md) for publishing products, checkout, and tracking.
 
 `npm run mobile` builds and opens the Android development app using Metro on port `8082`. After the app is installed, use `npm start` for subsequent JavaScript changes on the same port. Rebuild after native configuration changes.
 
@@ -96,7 +110,7 @@ Set the same Google OAuth **web client ID** in these files:
 | `duukayo-web/.env.local` | `NEXT_PUBLIC_GOOGLE_CLIENT_ID` |
 | `duukayo-mobile/.env` | `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` |
 
-Register `http://localhost:3000` as an authorized JavaScript origin in Google Cloud. For Android, register package `com.perpetuallabs.pos` and the build's signing-certificate SHA-1. For iOS, configure the matching bundle identifier, `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`, and its reversed `GOOGLE_IOS_URL_SCHEME`.
+Register `http://localhost:3000` as an authorized JavaScript origin in Google Cloud. For Android, register package `com.duukayo.ug` and the build's signing-certificate SHA-1. For iOS, configure the matching bundle identifier, `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`, and its reversed `GOOGLE_IOS_URL_SCHEME`.
 
 Restart the servers after editing environment files and rebuild the native app. Google sign-in needs an installed development or release build; Expo Go is unsupported. Blank client IDs leave Google sign-in disabled. New Google users create their business in the web dashboard before using mobile checkout.
 
@@ -113,3 +127,7 @@ python manage.py makemigrations --check --dry-run --settings=config.settings.tes
 Run `npm run typecheck` and `npm run lint` in both client folders. Run `npm run build` in the web folder and `npm test` in the mobile folder.
 
 See [deployment](docs/deployment.md), [architecture](docs/architecture.md), and [offline sync](docs/offline-sync.md) for more detail.
+
+## API/POS and marketplace implementation
+
+See [the implementation report](docs/api-implementation-progress.md) for register shifts, returns, split payments, branch transfers and combined storefront checkout. The report includes the tested migration plan, activation status, compatibility notes and remaining roadmap. Apply the approved database migrations before using the new code.

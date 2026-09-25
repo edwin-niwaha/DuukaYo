@@ -15,8 +15,8 @@ async function proxy(
       { status: 403 },
     );
   const base = process.env.API_URL || "http://127.0.0.1:8000";
-  const headers = new Headers({ "Content-Type": "application/json" });
-  for (const key of ["cookie", "x-csrftoken", "origin", "referer"]) {
+  const headers = new Headers({ "Content-Type": request.headers.get("content-type") || "application/json" });
+  for (const key of ["cookie", "x-csrftoken", "x-cart-token", "origin", "referer"]) {
     const value = request.headers.get(key);
     if (value) headers.set(key, value);
   }
@@ -26,10 +26,10 @@ async function proxy(
       {
         method: request.method,
         headers,
-        body: mutating ? await request.text() : undefined,
+        body: mutating ? await request.arrayBuffer() : undefined,
         cache: "no-store",
         redirect: "manual",
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(request.headers.get("content-type")?.includes("multipart/form-data") ? 210000 : 15000),
       },
     );
     const response = new NextResponse(
@@ -53,4 +53,4 @@ async function proxy(
     );
   }
 }
-export { proxy as GET, proxy as POST, proxy as PATCH, proxy as DELETE };
+export { proxy as GET, proxy as POST, proxy as PATCH, proxy as DELETE, proxy as PUT };

@@ -15,6 +15,9 @@ from apps.inventory.models import Movement, Stock
 class Command(BaseCommand):
     help = "Idempotent development-only demo seed; never resets existing stock or passwords."
 
+    def add_arguments(self, parser):
+        parser.add_argument("--image-base-url", default="", help="Optional web origin for labelled demo illustrations, e.g. http://localhost:3000")
+
     @transaction.atomic
     def handle(self, *args, **options):
         if not settings.DEBUG:
@@ -29,6 +32,7 @@ class Command(BaseCommand):
                 slug=slug,
                 defaults={
                     "name": name,
+                    "published": True,
                     "contact": "+256 700 123 456",
                     "delivery_enabled": True,
                     "delivery_fee": 3000,
@@ -75,6 +79,9 @@ class Command(BaseCommand):
                         "barcode": f"256{index}{len(products):09d}",
                     },
                 )
+                if options["image_base_url"] and not product.image and sku in {"MILK", "RICE", "SUGAR", "BREAD"}:
+                    product.image = options["image_base_url"].rstrip("/") + "/demo/" + sku.lower() + ".svg"
+                    product.save(update_fields=["image"])
                 stock, created = Stock.objects.get_or_create(
                     branch=branch, product=product, defaults={"quantity": qty}
                 )

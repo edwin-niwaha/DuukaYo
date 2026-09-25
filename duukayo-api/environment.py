@@ -82,9 +82,9 @@ def database_config():
     else:
         config = {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": os.environ.get("DB_NAME") or "perpetual_pos",
-            "USER": os.environ.get("DB_USER") or "perpetual",
-            "PASSWORD": os.environ.get("DB_PASSWORD", "perpetual_dev"),
+            "NAME": os.environ.get("DB_NAME") or "duukayo",
+            "USER": os.environ.get("DB_USER") or "duukayo",
+            "PASSWORD": os.environ.get("DB_PASSWORD", "duukayo_dev"),
             "HOST": os.environ.get("DB_HOST") or "127.0.0.1",
             "PORT": env_int("DB_PORT", 55432, 1),
             "CONN_MAX_AGE": 60,

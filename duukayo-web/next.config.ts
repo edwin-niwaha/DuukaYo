@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 const config: NextConfig = {
   output: "standalone",
+  devIndicators: false,
+  async redirects() {
+    return [{ source: "/bag", destination: "/cart", permanent: true }];
+  },
   async headers() {
     return [
       {

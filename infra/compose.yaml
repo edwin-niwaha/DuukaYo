@@ -3,13 +3,13 @@ services:
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: perpetual_pos
-      POSTGRES_USER: perpetual
-      POSTGRES_PASSWORD: perpetual_dev
+      POSTGRES_DB: duukayo
+      POSTGRES_USER: duukayo
+      POSTGRES_PASSWORD: duukayo_dev
     ports: ["127.0.0.1:55432:5432"]
     volumes: ["postgres_data:/var/lib/postgresql/data"]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U perpetual -d perpetual_pos"]
+      test: ["CMD-SHELL", "pg_isready -U duukayo -d duukayo"]
       interval: 5s
       timeout: 5s
       retries: 12

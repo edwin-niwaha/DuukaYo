@@ -4,7 +4,7 @@ import type { Product } from "../../lib/types";
 let promise: Promise<SQLite.SQLiteDatabase> | null = null;
 export function database() {
   if (!promise)
-    promise = SQLite.openDatabaseAsync("perpetual-pos.db").then(async (db) => {
+    promise = SQLite.openDatabaseAsync("duukayo.db").then(async (db) => {
       await initialize(db);
       return db;
     });

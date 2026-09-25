@@ -1,0 +1,25 @@
+import { test, expect } from "@playwright/test";
+test("real API image upload validates bytes and serves the saved product image", async ({ page, request }) => {
+  test.skip(!process.env.LIVE_API, "Requires isolated Django browser-test server and seeded owner.");
+  await page.goto("/dashboard");
+  await page.getByLabel("Username", { exact: true }).fill("kampala-corner-owner");
+  await page.getByLabel("Password", { exact: true }).fill("DemoOnly!2026");
+  await page.getByRole("button", { name: "Sign in →", exact: true }).click();
+  await page.getByRole("button", { name: "Catalog", exact: true }).click();
+  await page.getByRole("button", { name: "Add product", exact: true }).click();
+  const form = page.locator("form").filter({ has: page.getByRole("button", { name: "Save products", exact: true }) });
+  await form.getByLabel("Choose image").setInputFiles({ name: "fake.png", mimeType: "image/png", buffer: Buffer.from("not a real image") });
+  await form.getByRole("button", { name: "Upload selected image" }).click();
+  await expect(form.getByRole("alert")).toContainText("Invalid image");
+  await form.getByLabel("Choose image").setInputFiles({ name: "valid.png", mimeType: "image/png", buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAgUlEQVR4nNXOQREAIAzAsFJF+EAJ/g0gYg+uUZC176FM4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iRO4iTO34GpBzqWAWRmU3TjAAAAAElFTkSuQmCC", "base64") });
+  await form.getByRole("button", { name: "Upload selected image" }).click();
+  await expect(form.getByLabel("Image URL", { exact: true })).toHaveValue(/\/media\/businesses\/\d+\/[a-f0-9]+\.png$/);
+  const url = await form.getByLabel("Image URL", { exact: true }).inputValue();
+  const image = await request.get(url); expect(image.status()).toBe(200); expect(image.headers()["content-type"]).toBe("image/png");
+  await form.getByLabel("Product name", { exact: true }).fill("Upload integration product");
+  await form.getByLabel("SKU", { exact: true }).fill(`UPLOAD-${Date.now()}`);
+  await form.getByLabel("Price", { exact: true }).fill("40000"); await form.getByLabel("Cost", { exact: true }).fill("25000");
+  await form.getByRole("button", { name: "Save products", exact: true }).click();
+  await expect(page.getByText("Products saved.", { exact: true })).toBeVisible();
+  await expect(page.locator(".catalog-row").filter({ hasText: "Upload integration product" }).last()).toBeVisible();
+});

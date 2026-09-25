@@ -6,7 +6,7 @@ test("owner checkout, guest order, fulfilment and responsive storefront", async 
   const runId = Date.now();
   const evidence = `../docs/screenshots/run-${runId}`;
   const customerName = `Browser smoke ${runId}`;
-  await page.goto("/");
+  await page.goto("/dashboard");
   await expect(
     page.getByRole("heading", { name: "Welcome back." }),
   ).toBeVisible();
@@ -46,7 +46,8 @@ test("owner checkout, guest order, fulfilment and responsive storefront", async 
     viewport: { width: 390, height: 844 },
   });
   const shop = await guest.newPage();
-  await shop.goto("http://localhost:3000/shop/kampala-corner");
+  shop.on("dialog", dialog => void dialog.accept());
+  await shop.goto((process.env.PW_BASE_URL || "http://localhost:3000") + "/shop/kampala-corner");
   await expect(
     shop.getByRole("heading", { name: "Kampala Corner Shop" }),
   ).toBeVisible();
@@ -64,7 +65,7 @@ test("owner checkout, guest order, fulfilment and responsive storefront", async 
   ).toBeTruthy();
   await shop.getByRole("button", { name: "Place order →" }).click();
   await expect(shop).toHaveURL(/\/order\/[A-Za-z0-9_-]+/);
-  await expect(shop.getByText("pending", { exact: true })).toBeVisible();
+  await expect(shop.getByText("pending", { exact: true }).first()).toBeVisible();
   await expect(
     shop.getByRole("heading", { name: "Kampala Corner Shop" }),
   ).toBeVisible();
@@ -83,6 +84,6 @@ test("owner checkout, guest order, fulfilment and responsive storefront", async 
   await card.getByRole("button", { name: "Record payment & complete" }).click();
   await expect(card.getByText("completed", { exact: true })).toBeVisible();
   await shop.reload();
-  await expect(shop.getByText("completed", { exact: true })).toBeVisible();
+  await expect(shop.getByText("completed", { exact: true }).first()).toBeVisible();
   await guest.close();
 });
