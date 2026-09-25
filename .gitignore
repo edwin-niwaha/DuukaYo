@@ -31,3 +31,10 @@ duukayo-api/media/
 duukayo-api/platform-browser-media/
 
 duukayo-api/.media-backups/
+
+# Generated test evidence, logs and schema snapshots.
+/output/
+/docs/screenshots/
+*.log
+/docs/api-schema.yml
+/docs/openapi.yaml

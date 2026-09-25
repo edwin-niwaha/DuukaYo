@@ -7,3 +7,5 @@ The portal includes public discovery examples, JWT and session authentication gu
 Django templates are configured in base settings so documentation renders in all environments. Swagger still uses drf-spectacular's default external UI assets; the custom guide itself uses no external fonts, scripts or stylesheets. No database migration is required.
 
 Verification: Django rendering checks for all entry points and schema; Playwright `tests/api-docs.spec.ts` covers live search, empty search results, operation links, phone layout, navigation and schema failure recovery.
+
+Use `/api/v1/schema/` for the current API contract. To export and validate a local snapshot, run `python manage.py spectacular --file ../output/api-schema.yml --validate` from `duukayo-api` after creating the root `output` directory. Generated schemas, logs and browser screenshots are ignored by Git; regenerate them when needed instead of committing stale copies.

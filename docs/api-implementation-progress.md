@@ -25,21 +25,9 @@ Updated 21 September 2026. This implements a substantial first release of the ap
 - Both new checkout flows retain the same request after an uncertain network response. Authentication failures do not discard pending commands. Carts edited after an order attempt are not blindly deleted during recovery.
 - Mobile password guidance now matches the API's ten-character minimum.
 
-## Database activation: approval required
+## Database activation
 
-The configured application database is PostgreSQL **`duukayo_db` at `localhost:5432`**. A read-only inspection found two existing orders and zero existing payment records. It is not treated as a disposable test database.
-
-Automatic approval review rejected applying migrations to that database because the original command did not explicitly establish its target and could affect merchant data. The application database was not migrated. New code needs these migrations before normal use; a running development server may reload the code before its database is ready.
-
-Review [the exact migration plan](api-migration-plan.txt). There are 11 pending migrations in this release. They add tables/fields and copy historical order/payment snapshots into new ledgers. They do not remove existing orders, sale lines, payments or stock balances. Backfill tests verify that existing reservation/stock quantities remain unchanged. New operational records must be preserved when planning any later rollback.
-
-After approval: take a database backup, explicitly confirm the same target, apply the plan with the repository virtual environment, run Django checks and verify the existing storefront plus a read-only ledger reconciliation. Do not run demo seeding against merchant data.
-
-```powershell
-# From D:\PERPETUAL PROJECTS\DuukaYo\duukayo-api, after approval and backup:
-& '..\.venv\Scripts\python.exe' manage.py migrate --noinput
-& '..\.venv\Scripts\python.exe' manage.py check
-```
+Before deployment, back up the target database and inspect its current migration plan with `python manage.py migrate --plan` from `duukayo-api`. Pending migrations depend on the target database; regenerate the plan instead of relying on a saved snapshot. Apply the reviewed migrations with `python manage.py migrate --noinput`, then run `python manage.py check` and verify storefront access and ledger reconciliation. Do not seed demo data into a database containing merchant data. Preserve operational records when planning a rollback.
 
 Celery worker and beat must run for reservation expiry and durable notification retries. `PUSH_BACKEND=log` records development notifications; actual Firebase delivery requires working Firebase configuration. Restart long-lived workers after deployment.
 
@@ -63,7 +51,7 @@ Celery worker and beat must run for reservation expiry and durable notification 
 - Final web optimized production build passed, including compilation, TypeScript and static page generation.
 - Mobile tests: **28 passed**, including remount/retry recovery for combined checkout. Android Hermes export passed (1,395 modules).
 - **Eight distinct targeted browser scenarios passed** across the final relevant runs: combined-checkout recovery, drawer-command recovery, split-tender submission, held-sale recovery, product dialog/carousel behavior, individual checkout recovery, price revalidation and autoplay controls. Two test locator/timing assumptions were corrected and the affected tests rerun successfully.
-- Browser tests use isolated page contexts and mocked API transport for UI/retry assertions; backend integrity is tested separately against PostgreSQL. Screenshots are under `docs/screenshots`.
+- Browser tests use isolated page contexts and mocked API transport for UI/retry assertions; backend integrity is tested separately against PostgreSQL. Browser tests regenerate screenshots under the Git-ignored `docs/screenshots` directory.
 - No physical Android/iOS device, real receipt printer, real payment provider, SMTP or Firebase delivery has been certified by this work.
 
 ## Still required from the full prompt

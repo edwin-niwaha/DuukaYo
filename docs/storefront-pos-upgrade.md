@@ -55,6 +55,6 @@ An Android JavaScript/Hermes export and renderer interaction tests are included 
 | Web screenshots at 390, 768 and 1440 pixels | Captured and inspected; no horizontal overflow |
 | Working API connectivity | HTTP 200 |
 
-Screenshots: [landing](screenshots/storefront-landing-desktop.png), [phone shop](screenshots/upgraded-shop-390.png), [tablet shop](screenshots/upgraded-shop-768.png), [desktop shop](screenshots/upgraded-shop-1440.png), [product detail](screenshots/upgraded-product-detail.png), [confirmation](screenshots/upgraded-confirmation.png), [cashier POS](screenshots/upgraded-pos.png).
+Browser tests regenerate screenshots in the Git-ignored `docs/screenshots` directory.
 
 The React renderer reports its upstream deprecation notice, and Node reports its SQLite experimental notice; neither caused a test failure. Google browser tests stub the identity-provider callback and verify the application's flow; they do not establish live Google provider configuration.
